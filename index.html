@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AYF Connect - API Running</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            margin: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+        }
+        h1 {
+            color: #1E3A8A;
+            margin-bottom: 10px;
+        }
+        .status {
+            background: #10B981;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            font-size: 14px;
+            margin: 20px 0;
+        }
+        .endpoint-grid {
+            display: grid;
+            gap: 10px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        .endpoint {
+            background: #F3F4F6;
+            padding: 12px;
+            border-radius: 10px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .endpoint a {
+            color: #3B82F6;
+            text-decoration: none;
+        }
+        .endpoint a:hover {
+            text-decoration: underline;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #E5E7EB;
+            color: #6B7280;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="logo">⛪</div>
+        <h1>AYF Connect</h1>
+        <p>Gwarimpa Archdeaconry Youth Fellowship</p>
+        <div class="status">✅ Backend API Running</div>
+        
+        <div class="endpoint-grid">
+            <div class="endpoint">
+                🏠 <a href="/api/">API Root</a>
+            </div>
+            <div class="endpoint">
+                ❤️ <a href="/api/health">Health Check</a>
+            </div>
+            <div class="endpoint">
+                📅 <a href="/api/calendar/events?month=4&year=2026">Calendar Events</a>
+            </div>
+            <div class="endpoint">
+                📰 <a href="/api/feed/posts">Feed Posts</a>
+            </div>
+            <div class="endpoint">
+                💬 <a href="/api/chat/groups">Chat Groups</a>
+            </div>
+            <div class="endpoint">
+                📦 <a href="/api/quarterly/shares">Quarterly Shares</a>
+            </div>
+            <div class="endpoint">
+                👤 <a href="/api/profile/me">User Profile</a>
+            </div>
+        </div>
+        
+        <div class="footer">
+            Your React frontend will be available soon.<br>
+            For now, you can test the API endpoints above.
+        </div>
+    </div>
+</body>
+</html>
