@@ -1,0 +1,189 @@
+from fastapi import APIRouter, HTTPException, Depends, Query
+from typing import Optional, List
+from ..database import supabase
+from ..models import FeedPostCreate, CommentCreate, MessageResponse
+from ..middleware.auth import get_current_user, require_role
+from datetime import datetime
+import logging
+
+logger = logging.getLogger(__name__)
+router = APIRouter(prefix="/feed", tags=["Feed"])
+
+@router.post("/posts")
+async def create_post(
+    post: FeedPostCreate,
+    current_user = Depends(require_role(["admin", "gen_president", "gen_sec", "pro", "parish_president"]))
+):
+    """Create a feed post"""
+    post_data = {
+        "title": post.title,
+        "content": post.content,
+        "post_type": post.post_type,
+        "author_id": current_user['id'],
+        "parish_id": current_user.get('parish_id'),
+        "media_urls": post.media_urls,
+        "media_types": post.media_types
+    }
+    
+    result = supabase.table("feed_posts").insert(post_data).execute()
+    
+    # Notify all users
+    users = supabase.table("users").select("id").eq("is_active", True).execute()
+    for user in users.data:
+        supabase.table("notifications").insert({
+            "user_id": user['id'],
+            "type": "feed_post",
+            "title": "New Post",
+            "message": f"{current_user['full_name']}: {post.content[:100]}",
+            "data": {"post_id": result.data[0]['id']}
+        }).execute()
+    
+    return result.data[0]
+
+@router.get("/posts")
+async def get_posts(
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    post_type: Optional[str] = None,
+    current_user = Depends(get_current_user)
+):
+    """Get feed posts"""
+    query = supabase.table("feed_posts")\
+        .select("*, author:author_id(full_name, avatar_url, role), comments:feed_comments(count), likes:feed_likes(count)")\
+        .order("created_at", desc=True)\
+        .range(offset, offset + limit - 1)
+    
+    if post_type:
+        query = query.eq("post_type", post_type)
+    
+    result = query.execute()
+    
+    # Check if current user liked each post
+    for post in result.data:
+        like_check = supabase.table("feed_likes")\
+            .select("id")\
+            .eq("post_id", post['id'])\
+            .eq("user_id", current_user['id'])\
+            .execute()
+        post['user_liked'] = len(like_check.data) > 0
+        
+        # Get comments for this post
+        comments = supabase.table("feed_comments")\
+            .select("*, user:user_id(full_name, avatar_url)")\
+            .eq("post_id", post['id'])\
+            .order("created_at", desc=True)\
+            .limit(5)\
+            .execute()
+        post['recent_comments'] = comments.data
+        
+        # Increment view count
+        supabase.table("feed_posts").update({"view_count": post.get('view_count', 0) + 1})\
+            .eq("id", post['id']).execute()
+    
+    return result.data
+
+@router.get("/posts/{post_id}")
+async def get_post(post_id: str, current_user = Depends(get_current_user)):
+    """Get single post with details"""
+    post = supabase.table("feed_posts")\
+        .select("*, author:author_id(full_name, avatar_url, role)")\
+        .eq("id", post_id)\
+        .single()\
+        .execute()
+    
+    if not post.data:
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    # Get all comments
+    comments = supabase.table("feed_comments")\
+        .select("*, user:user_id(full_name, avatar_url)")\
+        .eq("post_id", post_id)\
+        .order("created_at", desc=True)\
+        .execute()
+    post.data['all_comments'] = comments.data
+    
+    # Check if user liked
+    like_check = supabase.table("feed_likes")\
+        .select("id")\
+        .eq("post_id", post_id)\
+        .eq("user_id", current_user['id'])\
+        .execute()
+    post.data['user_liked'] = len(like_check.data) > 0
+    
+    # Increment view count
+    supabase.table("feed_posts").update({"view_count": post.data.get('view_count', 0) + 1})\
+        .eq("id", post_id).execute()
+    
+    return post.data
+
+@router.post("/posts/{post_id}/like", response_model=MessageResponse)
+async def like_post(post_id: str, current_user = Depends(get_current_user)):
+    """Like a post"""
+    # Check if already liked
+    existing = supabase.table("feed_likes")\
+        .select("id")\
+        .eq("post_id", post_id)\
+        .eq("user_id", current_user['id'])\
+        .execute()
+    
+    if existing.data:
+        # Unlike
+        supabase.table("feed_likes").delete().eq("id", existing.data[0]['id']).execute()
+        return MessageResponse(message="Post unliked")
+    else:
+        # Like
+        supabase.table("feed_likes").insert({
+            "post_id": post_id,
+            "user_id": current_user['id']
+        }).execute()
+        
+        # Notify post author
+        post = supabase.table("feed_posts").select("author_id").eq("id", post_id).single().execute()
+        if post.data and post.data['author_id'] != current_user['id']:
+            supabase.table("notifications").insert({
+                "user_id": post.data['author_id'],
+                "type": "like",
+                "title": "Post Liked",
+                "message": f"{current_user['full_name']} liked your post",
+                "data": {"post_id": post_id}
+            }).execute()
+        
+        return MessageResponse(message="Post liked")
+
+@router.post("/posts/{post_id}/comment", response_model=MessageResponse)
+async def comment_on_post(
+    post_id: str,
+    comment: CommentCreate,
+    current_user = Depends(get_current_user)
+):
+    """Comment on a post"""
+    comment_data = {
+        "post_id": post_id,
+        "user_id": current_user['id'],
+        "comment": comment.comment
+    }
+    
+    result = supabase.table("feed_comments").insert(comment_data).execute()
+    
+    # Notify post author
+    post = supabase.table("feed_posts").select("author_id").eq("id", post_id).single().execute()
+    if post.data and post.data['author_id'] != current_user['id']:
+        supabase.table("notifications").insert({
+            "user_id": post.data['author_id'],
+            "type": "comment",
+            "title": "New Comment",
+            "message": f"{current_user['full_name']} commented on your post",
+            "data": {"post_id": post_id, "comment_id": result.data[0]['id']}
+        }).execute()
+    
+    return MessageResponse(message="Comment added", data=result.data[0])
+
+@router.post("/posts/{post_id}/share")
+async def share_post(post_id: str, current_user = Depends(get_current_user)):
+    """Share a post (increment share count)"""
+    result = supabase.table("feed_posts")\
+        .update({"share_count": supabase.table("feed_posts").select("share_count").eq("id", post_id).execute().data[0]['share_count'] + 1})\
+        .eq("id", post_id)\
+        .execute()
+    
+    return {"message": "Post shared", "share_count": result.data[0]['share_count'] if result.data else 0}
