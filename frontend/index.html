@@ -1,14 +1,95 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/logo.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
-    <meta name="theme-color" content="#1E3A8A" />
-    <title>AYF Connect - Gwarimpa Archdeaconry</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AYF Connect</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #1E3A8A; margin: 0; }
+        .status {
+            background: #10B981;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            display: inline-block;
+            font-size: 12px;
+        }
+        .endpoints {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .endpoint {
+            background: #f3f4f6;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+        a {
+            color: #3B82F6;
+            text-decoration: none;
+        }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 AYF Connect</h1>
+            <p>Gwarimpa Archdeaconry Youth Fellowship Platform</p>
+            <span class="status">✅ API is running</span>
+        </div>
+        
+        <div class="endpoints">
+            <h2>📡 API Endpoints</h2>
+            <div class="endpoint">
+                <strong>🏠 API Root:</strong> <a href="/api/">/api/</a>
+            </div>
+            <div class="endpoint">
+                <strong>❤️ Health Check:</strong> <a href="/api/health">/api/health</a>
+            </div>
+            <div class="endpoint">
+                <strong>📅 Calendar Events:</strong> <a href="/api/calendar/events?month=4&year=2026">/api/calendar/events?month=4&year=2026</a>
+            </div>
+            <div class="endpoint">
+                <strong>📰 Feed Posts:</strong> <a href="/api/feed/posts">/api/feed/posts</a>
+            </div>
+            <div class="endpoint">
+                <strong>💬 Chat Groups:</strong> <a href="/api/chat/groups">/api/chat/groups</a>
+            </div>
+            <div class="endpoint">
+                <strong>📦 Quarterly Shares:</strong> <a href="/api/quarterly/shares">/api/quarterly/shares</a>
+            </div>
+            <div class="endpoint">
+                <strong>👤 User Profile:</strong> <a href="/api/profile/me">/api/profile/me</a>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 40px; color: white;">
+            <p>Your React frontend will be deployed here soon!</p>
+            <p>For now, you can use the API endpoints above.</p>
+        </div>
+    </div>
+</body>
 </html>
