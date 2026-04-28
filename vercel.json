@@ -1,0 +1,35 @@
+{
+  "functions": {
+    "api/*.py": {
+      "runtime": "python3.9",
+      "maxDuration": 10
+    }
+  },
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/$1" },
+    { "source": "/(.*)", "destination": "/" }
+  ],
+  "env": {
+    "SUPABASE_URL": "@supabase_url",
+    "SUPABASE_KEY": "@supabase_key",
+    "SUPABASE_SERVICE_KEY": "@supabase_service_key",
+    "JWT_SECRET": "@jwt_secret",
+    "ADMIN_EMAIL": "@admin_email",
+    "ADMIN_PASSWORD": "@admin_password",
+    "SENDGRID_API_KEY": "@sendgrid_api_key",
+    "ONE_SIGNAL_APP_ID": "@onesignal_app_id"
+  },
+  "builds": [
+    {
+      "src": "backend/**/*.py",
+      "use": "@vercel/python"
+    },
+    {
+      "src": "frontend/**/*",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "frontend/dist"
+      }
+    }
+  ]
+}
