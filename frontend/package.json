@@ -1,9 +1,0 @@
-{
-  "name": "ayf-connect-frontend",
-  "version": "1.0.0",
-  "private": true,
-  "scripts": {
-    "build": "echo 'Building frontend...' && mkdir -p dist && cp index.html dist/",
-    "dev": "echo 'Development mode'"
-  }
-}
