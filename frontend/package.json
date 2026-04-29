@@ -1,0 +1,7 @@
+{
+  "name": "ayf-connect",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "cp index.html dist/ || mkdir dist && cp index.html dist/"
+  }
+}
